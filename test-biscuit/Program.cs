@@ -32,8 +32,6 @@ using (var builder = new AuthorizerBuilder())
     authorizer = builder.Build(b2);
 }
 
-Console.ReadLine();
-
 try
 {
     authorizer.Authorize();
