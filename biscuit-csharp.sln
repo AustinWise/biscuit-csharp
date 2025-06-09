@@ -1,9 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36202.13 d17.14
+VisualStudioVersion = 17.14.36202.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "biscuit-csharp", "biscuit-csharp\biscuit-csharp.csproj", "{46BE9477-FF30-40A9-85C8-84DDBAEA5D8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test-biscuit", "test-biscuit\test-biscuit.csproj", "{9EB1EC3D-686A-4706-A0B6-D8EAE276C9F1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		gen.cmd = gen.cmd
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +22,10 @@ Global
 		{46BE9477-FF30-40A9-85C8-84DDBAEA5D8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46BE9477-FF30-40A9-85C8-84DDBAEA5D8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46BE9477-FF30-40A9-85C8-84DDBAEA5D8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EB1EC3D-686A-4706-A0B6-D8EAE276C9F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EB1EC3D-686A-4706-A0B6-D8EAE276C9F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EB1EC3D-686A-4706-A0B6-D8EAE276C9F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EB1EC3D-686A-4706-A0B6-D8EAE276C9F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
