@@ -9,12 +9,12 @@ public sealed unsafe class BiscuitBuilder : IDisposable
 {
     private const int SEED_SIZE = 32;
 
-    private generated.BiscuitBuilder* handle;
+    private generated.BiscuitBuilder* _handle;
 
     public BiscuitBuilder()
     {
-        this.handle = biscuit_builder();
-        if (this.handle == null)
+        _handle = biscuit_builder();
+        if (_handle == null)
         {
             throw BiscuitException.FromLastError();
         }
@@ -28,9 +28,9 @@ public sealed unsafe class BiscuitBuilder : IDisposable
             byte ret;
             lock (this)
             {
-                if (handle == null)
+                if (_handle == null)
                     throw new ObjectDisposedException(nameof(BiscuitBuilder));
-                ret = biscuit_builder_add_rule(this.handle, charPtr);
+                ret = biscuit_builder_add_rule(_handle, charPtr);
             }
             GC.KeepAlive(this);
             if (ret == 0)
@@ -48,9 +48,9 @@ public sealed unsafe class BiscuitBuilder : IDisposable
             byte ret;
             lock (this)
             {
-                if (handle == null)
+                if (_handle == null)
                     throw new ObjectDisposedException(nameof(BiscuitBuilder));
-                ret = biscuit_builder_add_fact(this.handle, charPtr);
+                ret = biscuit_builder_add_fact(_handle, charPtr);
             }
             GC.KeepAlive(this);
             if (ret == 0)
@@ -68,9 +68,9 @@ public sealed unsafe class BiscuitBuilder : IDisposable
             byte ret;
             lock (this)
             {
-                if (handle == null)
+                if (_handle == null)
                     throw new ObjectDisposedException(nameof(BiscuitBuilder));
-                ret = biscuit_builder_add_check(this.handle, charPtr);
+                ret = biscuit_builder_add_check(_handle, charPtr);
             }
             GC.KeepAlive(this);
             if (ret == 0)
@@ -102,11 +102,11 @@ public sealed unsafe class BiscuitBuilder : IDisposable
             lock (this)
                 lock (keyPair)
                 {
-                    if (handle == null)
+                    if (_handle == null)
                         throw new ObjectDisposedException(nameof(BiscuitBuilder));
-                    if (keyPair.handle == null)
+                    if (keyPair._handle == null)
                         throw new ObjectDisposedException(nameof(KeyPair));
-                    ret = biscuit_builder_build(this.handle, keyPair.handle, bufPtr, SEED_SIZE);
+                    ret = biscuit_builder_build(_handle, keyPair._handle, bufPtr, SEED_SIZE);
                 }
             GC.KeepAlive(this);
             GC.KeepAlive(keyPair);
@@ -137,8 +137,8 @@ public sealed unsafe class BiscuitBuilder : IDisposable
         generated.BiscuitBuilder* handle;
         lock (this)
         {
-            handle = this.handle;
-            this.handle = null;
+            handle = _handle;
+            _handle = null;
         }
         if (handle != null)
         {

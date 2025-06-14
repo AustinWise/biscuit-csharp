@@ -3,7 +3,7 @@ using us.awise.biscuits;
 
 Console.WriteLine("Hello, World!");
 
-using var rootKp = new KeyPair();
+using var rootKp = new KeyPair(SignatureAlgorithm.Ed25519);
 using var root = rootKp.GetPublicKey();
 
 Biscuit biscuit;
@@ -13,7 +13,7 @@ using (var builder = new BiscuitBuilder())
     biscuit = builder.Build(rootKp);
 }
 
-using var kp2 = new KeyPair();
+using var kp2 = new KeyPair(SignatureAlgorithm.Ed25519);
 
 Biscuit b2;
 using (var builder = new BlockBuilder())

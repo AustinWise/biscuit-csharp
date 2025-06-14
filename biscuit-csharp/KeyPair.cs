@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using static us.awise.biscuits.generated.Methods;
 
@@ -6,12 +7,16 @@ namespace us.awise.biscuits;
 
 public sealed unsafe class KeyPair : IDisposable
 {
+    public const int SERIALIZED_SIZE = 32;
+
     private const int SEED_SIZE = 32;
 
-    internal generated.KeyPair* handle;
+    internal generated.KeyPair* _handle;
 
-    public KeyPair()
+    public KeyPair(SignatureAlgorithm algorithm)
     {
+        generated.SignatureAlgorithm genSignatureAlgorithm = algorithm.ToGenerated();
+
         // TODO: maybe deduplicate this logic with that in BiscuitBuilder
 #if NET
         Span<byte> buf = stackalloc byte[SEED_SIZE];
@@ -23,8 +28,8 @@ public sealed unsafe class KeyPair : IDisposable
 #endif
         fixed (byte* bufPtr = buf)
         {
-            handle = key_pair_new(bufPtr, SEED_SIZE, generated.SignatureAlgorithm.Ed25519);
-            if (handle == null)
+            _handle = key_pair_new(bufPtr, SEED_SIZE, genSignatureAlgorithm);
+            if (_handle == null)
             {
                 throw BiscuitException.FromLastError();
             }
@@ -34,9 +39,27 @@ public sealed unsafe class KeyPair : IDisposable
 #endif
     }
 
+    public KeyPair(ReadOnlySpan<byte> serialized, SignatureAlgorithm algorithm)
+    {
+        if (serialized.Length != SERIALIZED_SIZE)
+        {
+            throw new ArgumentException(nameof(serialized), $"Expected as {SERIALIZED_SIZE}-byte buffer");
+        }
+        generated.SignatureAlgorithm genSignatureAlgorithm = algorithm.ToGenerated();
+
+        fixed (byte* pBuf = serialized)
+        {
+            _handle = key_pair_deserialize(pBuf, genSignatureAlgorithm);
+        }
+        if (_handle == null)
+        {
+            throw BiscuitException.FromLastError();
+        }
+    }
+
     private KeyPair(generated.KeyPair* handle)
     {
-        this.handle = handle;
+        _handle = handle;
     }
 
     public PublicKey GetPublicKey()
@@ -44,9 +67,9 @@ public sealed unsafe class KeyPair : IDisposable
         generated.PublicKey* ret;
         lock (this)
         {
-            if (handle == null)
+            if (_handle == null)
                 throw new ObjectDisposedException(nameof(KeyPair));
-            ret = key_pair_public(handle);
+            ret = key_pair_public(_handle);
         }
         GC.KeepAlive(this);
         if (ret == null)
@@ -54,6 +77,33 @@ public sealed unsafe class KeyPair : IDisposable
             throw BiscuitException.FromLastError();
         }
         return new PublicKey(ret);
+    }
+
+    /// <summary>
+    /// Serializes the key pair into the buffer.
+    /// </summary>
+    /// <param name="buffer">Should be <see cref="SERIALIZED_SIZE"/> bytes long</param>
+    public void Serialize(Span<byte> buffer)
+    {
+        if (buffer.Length != SERIALIZED_SIZE)
+        {
+            throw new ArgumentException(nameof(buffer), $"Expected as {SERIALIZED_SIZE}-byte buffer");
+        }
+
+        lock (this)
+        {
+            if (_handle == null)
+                throw new ObjectDisposedException(nameof(PublicKey));
+            nuint ret;
+            fixed (byte* pBuf = buffer)
+            {
+                ret = key_pair_serialize(_handle, pBuf);
+            }
+            if (ret != SERIALIZED_SIZE)
+            {
+                Environment.FailFast("key_pair_serialize wrote an unexpected number of bytes");
+            }
+        }
     }
 
     ~KeyPair()
@@ -72,8 +122,8 @@ public sealed unsafe class KeyPair : IDisposable
         generated.KeyPair* handle;
         lock (this)
         {
-            handle = this.handle;
-            this.handle = null;
+            handle = _handle;
+            _handle = null;
         }
         if (handle != null)
         {

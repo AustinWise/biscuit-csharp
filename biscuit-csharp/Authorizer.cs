@@ -4,11 +4,11 @@ namespace us.awise.biscuits;
 
 public sealed unsafe class Authorizer : IDisposable
 {
-    private generated.Authorizer* handle;
+    private generated.Authorizer* _handle;
 
     internal Authorizer(generated.Authorizer* handle)
     {
-        this.handle = handle;
+        _handle = handle;
     }
 
     public void Authorize()
@@ -16,9 +16,9 @@ public sealed unsafe class Authorizer : IDisposable
         byte ret;
         lock (this)
         {
-            if (handle == null)
+            if (_handle == null)
                 throw new ObjectDisposedException(nameof(Authorizer));
-            ret = authorizer_authorize(handle);
+            ret = authorizer_authorize(_handle);
             GC.KeepAlive(this);
         }
         if (ret == 0)
@@ -44,8 +44,8 @@ public sealed unsafe class Authorizer : IDisposable
         generated.Authorizer* handle;
         lock (this)
         {
-            handle = this.handle;
-            this.handle = null;
+            handle = _handle;
+            _handle = null;
         }
         if (handle != null)
         {
@@ -60,9 +60,9 @@ public sealed unsafe class Authorizer : IDisposable
         {
             lock (this)
             {
-                if (handle == null)
+                if (_handle == null)
                     throw new ObjectDisposedException(nameof(Authorizer));
-                cstr = authorizer_print(this.handle);
+                cstr = authorizer_print(_handle);
                 GC.KeepAlive(this);
             }
             if (cstr == null)

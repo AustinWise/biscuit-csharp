@@ -4,12 +4,12 @@ namespace us.awise.biscuits;
 
 public sealed unsafe class BlockBuilder : IDisposable
 {
-    internal generated.BlockBuilder* handle;
+    internal generated.BlockBuilder* _handle;
 
     public BlockBuilder()
     {
-        this.handle = create_block();
-        if (handle == null)
+        _handle = create_block();
+        if (_handle == null)
         {
             throw BiscuitException.FromLastError();
         }
@@ -23,9 +23,9 @@ public sealed unsafe class BlockBuilder : IDisposable
             byte ret;
             lock (this)
             {
-                if (handle == null)
+                if (_handle == null)
                     throw new ObjectDisposedException(nameof(BlockBuilder));
-                ret = block_builder_add_rule(this.handle, charPtr);
+                ret = block_builder_add_rule(_handle, charPtr);
             }
             GC.KeepAlive(this);
             if (ret == 0)
@@ -43,9 +43,9 @@ public sealed unsafe class BlockBuilder : IDisposable
             byte ret;
             lock (this)
             {
-                if (handle == null)
+                if (_handle == null)
                     throw new ObjectDisposedException(nameof(BlockBuilder));
-                ret = block_builder_add_fact(this.handle, charPtr);
+                ret = block_builder_add_fact(_handle, charPtr);
             }
             GC.KeepAlive(this);
             if (ret == 0)
@@ -63,9 +63,9 @@ public sealed unsafe class BlockBuilder : IDisposable
             byte ret;
             lock (this)
             {
-                if (handle == null)
+                if (_handle == null)
                     throw new ObjectDisposedException(nameof(BlockBuilder));
-                ret = block_builder_add_check(this.handle, charPtr);
+                ret = block_builder_add_check(_handle, charPtr);
             }
             GC.KeepAlive(this);
             if (ret == 0)
@@ -91,8 +91,8 @@ public sealed unsafe class BlockBuilder : IDisposable
         generated.BlockBuilder* handle;
         lock (this)
         {
-            handle = this.handle;
-            this.handle = null;
+            handle = _handle;
+            _handle = null;
         }
         if (handle != null)
         {
