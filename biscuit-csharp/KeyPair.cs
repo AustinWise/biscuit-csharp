@@ -41,9 +41,15 @@ public sealed unsafe class KeyPair : IDisposable
 
     public PublicKey GetPublicKey()
     {
-        var ret = key_pair_public(this.handle);
+        generated.PublicKey* ret;
+        lock (this)
+        {
+            if (handle == null)
+                throw new ObjectDisposedException(nameof(KeyPair));
+            ret = key_pair_public(handle);
+        }
         GC.KeepAlive(this);
-        if (ret  == null)
+        if (ret == null)
         {
             throw BiscuitException.FromLastError();
         }
@@ -57,19 +63,23 @@ public sealed unsafe class KeyPair : IDisposable
 
     public void Dispose()
     {
+        if (handle == null)
+            throw new ObjectDisposedException(nameof(KeyPair));
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
     private void Dispose(bool disposing)
     {
-        // TODO: make this thread safe and handle resurrection.
-        generated.KeyPair* handle = this.handle;
-        this.handle = null;
+        generated.KeyPair* handle;
+        lock (this)
+        {
+            handle = this.handle;
+            this.handle = null;
+        }
         if (handle != null)
         {
             key_pair_free(handle);
-            GC.KeepAlive(this);
         }
     }
 }

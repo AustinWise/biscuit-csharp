@@ -18,19 +18,23 @@ public unsafe sealed class PublicKey : IDisposable
 
     public void Dispose()
     {
+        if (handle == null)
+            throw new ObjectDisposedException(nameof(PublicKey));
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
     private void Dispose(bool disposing)
     {
-        // TODO: make this thread safe and handle resurrection.
-        generated.PublicKey* handle = this.handle;
-        this.handle = null;
+        generated.PublicKey* handle;
+        lock (this)
+        {
+            handle = this.handle;
+            this.handle = null;
+        }
         if (handle != null)
         {
             public_key_free(handle);
-            GC.KeepAlive(this);
         }
     }
 }

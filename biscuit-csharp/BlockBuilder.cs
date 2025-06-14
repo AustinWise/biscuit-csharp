@@ -20,7 +20,13 @@ public sealed unsafe class BlockBuilder : IDisposable
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
-            byte ret = block_builder_add_rule(this.handle, charPtr);
+            byte ret;
+            lock (this)
+            {
+                if (handle == null)
+                    throw new ObjectDisposedException(nameof(BlockBuilder));
+                ret = block_builder_add_rule(this.handle, charPtr);
+            }
             GC.KeepAlive(this);
             if (ret == 0)
             {
@@ -34,7 +40,13 @@ public sealed unsafe class BlockBuilder : IDisposable
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
-            byte ret = block_builder_add_fact(this.handle, charPtr);
+            byte ret;
+            lock (this)
+            {
+                if (handle == null)
+                    throw new ObjectDisposedException(nameof(BlockBuilder));
+                ret = block_builder_add_fact(this.handle, charPtr);
+            }
             GC.KeepAlive(this);
             if (ret == 0)
             {
@@ -48,7 +60,13 @@ public sealed unsafe class BlockBuilder : IDisposable
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
-            byte ret = block_builder_add_check(this.handle, charPtr);
+            byte ret;
+            lock (this)
+            {
+                if (handle == null)
+                    throw new ObjectDisposedException(nameof(BlockBuilder));
+                ret = block_builder_add_check(this.handle, charPtr);
+            }
             GC.KeepAlive(this);
             if (ret == 0)
             {
@@ -64,19 +82,23 @@ public sealed unsafe class BlockBuilder : IDisposable
 
     public void Dispose()
     {
+        if (handle == null)
+            throw new ObjectDisposedException(nameof(BlockBuilder));
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
     private void Dispose(bool disposing)
     {
-        // TODO: make this thread safe and handle resurrection.
-        generated.BlockBuilder* handle = this.handle;
-        this.handle = null;
+        generated.BlockBuilder* handle;
+        lock (this)
+        {
+            handle = this.handle;
+            this.handle = null;
+        }
         if (handle != null)
         {
             block_builder_free(handle);
-            GC.KeepAlive(this);
         }
     }
 }

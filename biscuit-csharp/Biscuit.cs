@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using static us.awise.biscuits.generated.Methods;
+﻿using static us.awise.biscuits.generated.Methods;
 
 namespace us.awise.biscuits;
 
@@ -14,7 +13,25 @@ public sealed unsafe class Biscuit : IDisposable
 
     public Biscuit AppendBlock(BlockBuilder bb, KeyPair kp)
     {
-        generated.Biscuit* ret = biscuit_append_block(this.handle, bb.handle, kp.handle);
+        if (bb is null)
+            throw new ArgumentNullException(nameof(bb));
+        if (kp is null)
+            throw new ArgumentNullException(nameof(kp));
+
+        generated.Biscuit* ret;
+        // Lock in alphabetical order by class name
+        lock (this)
+            lock (bb)
+                lock (kp)
+                {
+                    if (handle == null)
+                        throw new ObjectDisposedException(nameof(Biscuit));
+                    if (bb.handle == null)
+                        throw new ObjectDisposedException(nameof(BlockBuilder));
+                    if (kp.handle == null)
+                        throw new ObjectDisposedException(nameof(KeyPair));
+                    ret = biscuit_append_block(handle, bb.handle, kp.handle);
+                }
         GC.KeepAlive(this);
         GC.KeepAlive(bb);
         GC.KeepAlive(kp);
@@ -32,19 +49,23 @@ public sealed unsafe class Biscuit : IDisposable
 
     public void Dispose()
     {
+        if (handle == null)
+            throw new ObjectDisposedException(nameof(Biscuit));
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
     private void Dispose(bool disposing)
     {
-        // TODO: make this thread safe and handle resurrection.
-        generated.Biscuit* handle = this.handle;
-        this.handle = null;
+        generated.Biscuit* handle;
+        lock (this)
+        {
+            handle = this.handle;
+            this.handle = null;
+        }
         if (handle != null)
         {
             biscuit_free(handle);
-            GC.KeepAlive(this);
         }
     }
 }

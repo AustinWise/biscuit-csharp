@@ -13,8 +13,14 @@ public sealed unsafe class Authorizer : IDisposable
 
     public void Authorize()
     {
-        byte ret = authorizer_authorize(this.handle);
-        GC.KeepAlive(this);
+        byte ret;
+        lock (this)
+        {
+            if (handle == null)
+                throw new ObjectDisposedException(nameof(Authorizer));
+            ret = authorizer_authorize(handle);
+            GC.KeepAlive(this);
+        }
         if (ret == 0)
         {
             // TODO: maybe there is a way to return an option type instead of throwing?
@@ -29,19 +35,23 @@ public sealed unsafe class Authorizer : IDisposable
 
     public void Dispose()
     {
+        if (handle == null)
+            throw new ObjectDisposedException(nameof(Authorizer));
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
     private void Dispose(bool disposing)
     {
-        // TODO: make this thread safe and handle resurrection.
-        generated.Authorizer* handle = this.handle;
-        this.handle = null;
+        generated.Authorizer* handle;
+        lock (this)
+        {
+            handle = this.handle;
+            this.handle = null;
+        }
         if (handle != null)
         {
             authorizer_free(handle);
-            GC.KeepAlive(this);
         }
     }
 
@@ -50,8 +60,13 @@ public sealed unsafe class Authorizer : IDisposable
         sbyte* cstr = null;
         try
         {
-            cstr = authorizer_print(this.handle);
-            GC.KeepAlive(this);
+            lock (this)
+            {
+                if (handle == null)
+                    throw new ObjectDisposedException(nameof(Authorizer));
+                cstr = authorizer_print(this.handle);
+                GC.KeepAlive(this);
+            }
             if (cstr == null)
             {
                 throw BiscuitException.FromLastError();

@@ -25,7 +25,13 @@ public sealed unsafe class BiscuitBuilder : IDisposable
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
-            byte ret = biscuit_builder_add_rule(this.handle, charPtr);
+            byte ret;
+            lock (this)
+            {
+                if (handle == null)
+                    throw new ObjectDisposedException(nameof(BiscuitBuilder));
+                ret = biscuit_builder_add_rule(this.handle, charPtr);
+            }
             GC.KeepAlive(this);
             if (ret == 0)
             {
@@ -39,7 +45,13 @@ public sealed unsafe class BiscuitBuilder : IDisposable
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
-            byte ret = biscuit_builder_add_fact(this.handle, charPtr);
+            byte ret;
+            lock (this)
+            {
+                if (handle == null)
+                    throw new ObjectDisposedException(nameof(BiscuitBuilder));
+                ret = biscuit_builder_add_fact(this.handle, charPtr);
+            }
             GC.KeepAlive(this);
             if (ret == 0)
             {
@@ -53,7 +65,13 @@ public sealed unsafe class BiscuitBuilder : IDisposable
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
-            byte ret = biscuit_builder_add_check(this.handle, charPtr);
+            byte ret;
+            lock (this)
+            {
+                if (handle == null)
+                    throw new ObjectDisposedException(nameof(BiscuitBuilder));
+                ret = biscuit_builder_add_check(this.handle, charPtr);
+            }
             GC.KeepAlive(this);
             if (ret == 0)
             {
@@ -64,6 +82,9 @@ public sealed unsafe class BiscuitBuilder : IDisposable
 
     public Biscuit Build(KeyPair keyPair)
     {
+        if (keyPair == null)
+            throw new ArgumentNullException(nameof(keyPair));
+
         // TODO: figure out if we need to use the same seed as the key pair
         // TODO: maybe deduplicate this logic with that in KeyPair
 #if NET
@@ -77,10 +98,19 @@ public sealed unsafe class BiscuitBuilder : IDisposable
         generated.Biscuit* ret;
         fixed (byte* bufPtr = buf)
         {
-            ret = biscuit_builder_build(this.handle, keyPair.handle, bufPtr, SEED_SIZE);
+            // Lock in alphabetical order by class name
+            lock (this)
+                lock (keyPair)
+                {
+                    if (handle == null)
+                        throw new ObjectDisposedException(nameof(BiscuitBuilder));
+                    if (keyPair.handle == null)
+                        throw new ObjectDisposedException(nameof(KeyPair));
+                    ret = biscuit_builder_build(this.handle, keyPair.handle, bufPtr, SEED_SIZE);
+                }
             GC.KeepAlive(this);
             GC.KeepAlive(keyPair);
-            if (handle == null)
+            if (ret == null)
             {
                 throw BiscuitException.FromLastError();
             }
@@ -98,19 +128,23 @@ public sealed unsafe class BiscuitBuilder : IDisposable
 
     public void Dispose()
     {
+        if (handle == null)
+            throw new ObjectDisposedException(nameof(BiscuitBuilder));
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
     private void Dispose(bool disposing)
     {
-        // TODO: make this thread safe and handle resurrection.
-        generated.BiscuitBuilder* handle = this.handle;
-        this.handle = null;
+        generated.BiscuitBuilder* handle;
+        lock (this)
+        {
+            handle = this.handle;
+            this.handle = null;
+        }
         if (handle != null)
         {
             biscuit_builder_free(handle);
-            GC.KeepAlive(this);
         }
     }
 }
