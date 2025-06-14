@@ -6,19 +6,27 @@
         <RootNamespace>test_biscuit</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <PublishAot>true</PublishAot>
+        <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\biscuit-csharp\biscuit-csharp.csproj" />
+        <ProjectReference Include="..\biscuit-csharp\biscuit-csharp.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <None Include="C:\temp\biscuit-capi\bin\biscuit_auth.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="C:\temp\biscuit-capi\bin\biscuit_auth.pdb">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
+    <Target Name="PrepareForNativeBuild" AfterTargets="Build">
+        <!-- These two ItemGroups are for static linking publishing as NativeAOT. -->
+        <ItemGroup>
+            <NativeLibrary Include="C:\temp\biscuit-capi\lib\biscuit_auth.lib" />
+            <DirectPInvoke Include="biscuit_auth" />
+        </ItemGroup>
+        <ItemGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+            <!-- This is needed by biscuit_auth.lib. -->
+            <LinkerArg Include="Userenv.lib" />
+        </ItemGroup>
+
+        <!-- This is for dynamic linking when running on CoreCLR. -->
+        <Copy SourceFiles="C:\temp\biscuit-capi\bin\biscuit_auth.dll" DestinationFolder="$(OutDir)" />
+    </Target>
 
 </Project>
