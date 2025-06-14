@@ -127,8 +127,6 @@ public sealed unsafe class AuthorizerBuilder : IDisposable
 
     public void Dispose()
     {
-        if (handle == null)
-            throw new ObjectDisposedException(nameof(AuthorizerBuilder));
         Dispose(true);
         GC.SuppressFinalize(this);
     }

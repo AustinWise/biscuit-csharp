@@ -128,8 +128,6 @@ public sealed unsafe class BiscuitBuilder : IDisposable
 
     public void Dispose()
     {
-        if (handle == null)
-            throw new ObjectDisposedException(nameof(BiscuitBuilder));
         Dispose(true);
         GC.SuppressFinalize(this);
     }

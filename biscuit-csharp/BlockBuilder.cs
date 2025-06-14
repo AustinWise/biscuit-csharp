@@ -82,8 +82,6 @@ public sealed unsafe class BlockBuilder : IDisposable
 
     public void Dispose()
     {
-        if (handle == null)
-            throw new ObjectDisposedException(nameof(BlockBuilder));
         Dispose(true);
         GC.SuppressFinalize(this);
     }

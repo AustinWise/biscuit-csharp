@@ -63,8 +63,6 @@ public sealed unsafe class KeyPair : IDisposable
 
     public void Dispose()
     {
-        if (handle == null)
-            throw new ObjectDisposedException(nameof(KeyPair));
         Dispose(true);
         GC.SuppressFinalize(this);
     }

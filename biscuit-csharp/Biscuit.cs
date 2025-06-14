@@ -49,8 +49,6 @@ public sealed unsafe class Biscuit : IDisposable
 
     public void Dispose()
     {
-        if (handle == null)
-            throw new ObjectDisposedException(nameof(Biscuit));
         Dispose(true);
         GC.SuppressFinalize(this);
     }

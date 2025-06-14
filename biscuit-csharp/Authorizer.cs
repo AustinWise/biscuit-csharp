@@ -35,8 +35,6 @@ public sealed unsafe class Authorizer : IDisposable
 
     public void Dispose()
     {
-        if (handle == null)
-            throw new ObjectDisposedException(nameof(Authorizer));
         Dispose(true);
         GC.SuppressFinalize(this);
     }

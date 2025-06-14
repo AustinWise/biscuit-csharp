@@ -18,8 +18,6 @@ public unsafe sealed class PublicKey : IDisposable
 
     public void Dispose()
     {
-        if (handle == null)
-            throw new ObjectDisposedException(nameof(PublicKey));
         Dispose(true);
         GC.SuppressFinalize(this);
     }
