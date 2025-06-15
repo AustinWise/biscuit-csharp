@@ -5,7 +5,7 @@ namespace us.awise.biscuits;
 public unsafe sealed class PublicKey : IEquatable<PublicKey>, IDisposable
 {
     public const int SERIALIZED_SIZE = 32;
-    private const int EXPECTED_PEM_SIZE = 256;
+    private const int EXPECTED_PEM_SIZE = 128;
 
     private static int s_serialCounter;
 
