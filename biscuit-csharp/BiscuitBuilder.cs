@@ -1,17 +1,12 @@
-﻿using System;
-using System.Buffers;
-using System.Security.Cryptography;
-using static us.awise.biscuits.generated.Methods;
+﻿using static us.awise.biscuits.generated.Methods;
 
 namespace us.awise.biscuits;
 
 public sealed unsafe class BiscuitBuilder : IDisposable
 {
-    private const int SEED_SIZE = 32;
+    internal generated.BiscuitBuilder* _handle;
 
-    private generated.BiscuitBuilder* _handle;
-
-    public BiscuitBuilder()
+    internal BiscuitBuilder()
     {
         _handle = biscuit_builder();
         if (_handle == null)
@@ -78,47 +73,6 @@ public sealed unsafe class BiscuitBuilder : IDisposable
                 throw BiscuitException.FromLastError();
             }
         }
-    }
-
-    public Biscuit Build(KeyPair keyPair)
-    {
-        if (keyPair == null)
-            throw new ArgumentNullException(nameof(keyPair));
-
-        // TODO: figure out if we need to use the same seed as the key pair
-        // TODO: maybe deduplicate this logic with that in KeyPair
-#if NET
-        Span<byte> buf = stackalloc byte[SEED_SIZE];
-        RandomNumberGenerator.Fill(buf);
-#else
-        byte[] buf = ArrayPool<byte>.Shared.Rent(SEED_SIZE);
-        using var ran = RandomNumberGenerator.Create();
-        ran.GetBytes(buf, 0, SEED_SIZE);
-#endif
-        generated.Biscuit* ret;
-        fixed (byte* bufPtr = buf)
-        {
-            // Lock in alphabetical order by class name
-            lock (this)
-                lock (keyPair)
-                {
-                    if (_handle == null)
-                        throw new ObjectDisposedException(nameof(BiscuitBuilder));
-                    if (keyPair._handle == null)
-                        throw new ObjectDisposedException(nameof(KeyPair));
-                    ret = biscuit_builder_build(_handle, keyPair._handle, bufPtr, SEED_SIZE);
-                }
-            GC.KeepAlive(this);
-            GC.KeepAlive(keyPair);
-            if (ret == null)
-            {
-                throw BiscuitException.FromLastError();
-            }
-        }
-#if !NET
-        ArrayPool<byte>.Shared.Return(buf, clearArray: true);
-#endif
-        return new Biscuit(ret);
     }
 
     ~BiscuitBuilder()

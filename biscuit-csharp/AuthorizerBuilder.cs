@@ -2,17 +2,15 @@
 
 namespace us.awise.biscuits;
 
-public sealed unsafe class AuthorizerBuilder : IDisposable
+public unsafe struct AuthorizerBuilder
 {
-    private generated.AuthorizerBuilder* _handle;
+    internal generated.AuthorizerBuilder* _handle;
 
-    public AuthorizerBuilder()
+    internal AuthorizerBuilder(generated.AuthorizerBuilder* handle)
     {
-        _handle = authorizer_builder();
-        if (_handle == null)
-        {
-            throw BiscuitException.FromLastError();
-        }
+        if (handle == null)
+            throw new ArgumentNullException(nameof(handle));
+        _handle = handle;
     }
 
     public void AddCheck(ReadOnlySpan<byte> utf8)
@@ -20,14 +18,7 @@ public sealed unsafe class AuthorizerBuilder : IDisposable
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
-            byte ret;
-            lock (this)
-            {
-                if (_handle == null)
-                    throw new ObjectDisposedException(nameof(AuthorizerBuilder));
-                ret = authorizer_builder_add_check(_handle, charPtr);
-            }
-            GC.KeepAlive(this);
+            byte ret = authorizer_builder_add_check(_handle, charPtr);
             if (ret == 0)
             {
                 throw BiscuitException.FromLastError();
@@ -40,12 +31,7 @@ public sealed unsafe class AuthorizerBuilder : IDisposable
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
-            byte ret;
-            lock (this)
-            {
-                ret = authorizer_builder_add_fact(_handle, charPtr);
-            }
-            GC.KeepAlive(this);
+            byte ret = authorizer_builder_add_fact(_handle, charPtr);
             if (ret == 0)
             {
                 throw BiscuitException.FromLastError();
@@ -58,14 +44,7 @@ public sealed unsafe class AuthorizerBuilder : IDisposable
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
-            byte ret;
-            lock (this)
-            {
-                if (_handle == null)
-                    throw new ObjectDisposedException(nameof(AuthorizerBuilder));
-                ret = authorizer_builder_add_policy(_handle, charPtr);
-            }
-            GC.KeepAlive(this);
+            byte ret = authorizer_builder_add_policy(_handle, charPtr);
             if (ret == 0)
             {
                 throw BiscuitException.FromLastError();
@@ -78,70 +57,11 @@ public sealed unsafe class AuthorizerBuilder : IDisposable
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
-            byte ret;
-            lock (this)
-            {
-                if (_handle == null)
-                    throw new ObjectDisposedException(nameof(AuthorizerBuilder));
-                ret = authorizer_builder_add_rule(_handle, charPtr);
-            }
-            GC.KeepAlive(this);
+            byte ret = authorizer_builder_add_rule(_handle, charPtr);
             if (ret == 0)
             {
                 throw BiscuitException.FromLastError();
             }
-        }
-    }
-
-    public Authorizer Build(Biscuit token)
-    {
-        generated.AuthorizerBuilder* handle;
-        lock (this)
-        {
-            handle = _handle;
-            _handle = null;
-        }
-        if (handle == null)
-            throw new ObjectDisposedException(nameof(AuthorizerBuilder));
-        GC.SuppressFinalize(this);
-
-        generated.Authorizer* ret;
-        lock (token)
-        {
-            // This consume the AuthorizerBuilder*
-            ret = authorizer_builder_build(handle, token._handle);
-            GC.KeepAlive(token);
-        }
-        if (ret == null)
-        {
-            throw BiscuitException.FromLastError();
-        }
-
-        return new Authorizer(ret);
-    }
-
-    ~AuthorizerBuilder()
-    {
-        Dispose(false);
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        generated.AuthorizerBuilder* handle;
-        lock (this)
-        {
-            handle = _handle;
-            _handle = null;
-        }
-        if (handle != null)
-        {
-            authorizer_builder_free(handle);
         }
     }
 }

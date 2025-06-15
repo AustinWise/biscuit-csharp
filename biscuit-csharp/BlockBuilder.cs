@@ -6,7 +6,7 @@ public sealed unsafe class BlockBuilder : IDisposable
 {
     internal generated.BlockBuilder* _handle;
 
-    public BlockBuilder()
+    internal BlockBuilder()
     {
         _handle = create_block();
         if (_handle == null)

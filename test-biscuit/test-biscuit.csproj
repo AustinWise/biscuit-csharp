@@ -27,6 +27,7 @@
 
         <!-- This is for dynamic linking when running on CoreCLR. -->
         <Copy SourceFiles="C:\temp\biscuit-capi\bin\biscuit_auth.dll" DestinationFolder="$(OutDir)" />
+        <Copy SourceFiles="C:\temp\biscuit-capi\bin\biscuit_auth.pdb" DestinationFolder="$(OutDir)" />
     </Target>
 
 </Project>
