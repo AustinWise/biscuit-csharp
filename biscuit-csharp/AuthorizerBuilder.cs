@@ -26,9 +26,35 @@ public unsafe struct AuthorizerBuilder
         }
     }
 
+    public void AddCheck(ReadOnlySpan<char> str)
+    {
+        using var chars = new CStringBuilder(str, stackalloc byte[CStringBuilder.STACK_SIZE]);
+        fixed (sbyte* charPtr = chars.Buffer)
+        {
+            byte ret = authorizer_builder_add_check(_handle, charPtr);
+            if (ret == 0)
+            {
+                throw BiscuitException.FromLastError();
+            }
+        }
+    }
+
     public void AddFact(ReadOnlySpan<byte> utf8)
     {
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
+        fixed (sbyte* charPtr = chars.Buffer)
+        {
+            byte ret = authorizer_builder_add_fact(_handle, charPtr);
+            if (ret == 0)
+            {
+                throw BiscuitException.FromLastError();
+            }
+        }
+    }
+
+    public void AddFact(ReadOnlySpan<char> str)
+    {
+        using var chars = new CStringBuilder(str, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
             byte ret = authorizer_builder_add_fact(_handle, charPtr);
@@ -52,9 +78,35 @@ public unsafe struct AuthorizerBuilder
         }
     }
 
+    public void AddPolicy(ReadOnlySpan<char> str)
+    {
+        using var chars = new CStringBuilder(str, stackalloc byte[CStringBuilder.STACK_SIZE]);
+        fixed (sbyte* charPtr = chars.Buffer)
+        {
+            byte ret = authorizer_builder_add_policy(_handle, charPtr);
+            if (ret == 0)
+            {
+                throw BiscuitException.FromLastError();
+            }
+        }
+    }
+
     public void AddRule(ReadOnlySpan<byte> utf8)
     {
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
+        fixed (sbyte* charPtr = chars.Buffer)
+        {
+            byte ret = authorizer_builder_add_rule(_handle, charPtr);
+            if (ret == 0)
+            {
+                throw BiscuitException.FromLastError();
+            }
+        }
+    }
+
+    public void AddRule(ReadOnlySpan<char> str)
+    {
+        using var chars = new CStringBuilder(str, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
         {
             byte ret = authorizer_builder_add_rule(_handle, charPtr);

@@ -9,19 +9,20 @@ using var root = rootKp.GetPublicKey();
 using Biscuit biscuit = Biscuit.Create(rootKp, static builder =>
 {
     builder.AddFact("right(\"file1\", \"read\")"u8);
+    builder.AddFact("right(\"file2\", \"read\")");
 });
 
 using var kp2 = new KeyPair(SignatureAlgorithm.Ed25519);
 
 using Biscuit b2 = biscuit.AppendBlock(kp2, static builder =>
 {
-    builder.AddCheck("check if operation(\"read\")"u8);
+    builder.AddCheck("check if operation(\"read\")");
     builder.AddFact("hello(\"world\")"u8);
 });
 
 using Authorizer authorizer = Authorizer.Create(b2, static builder =>
 {
-    builder.AddCheck("check if right(\"efgh\")"u8);
+    builder.AddCheck("check if right(\"efgh\")");
     builder.AddPolicy("allow if true"u8);
 });
 
