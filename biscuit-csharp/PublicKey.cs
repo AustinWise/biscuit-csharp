@@ -5,8 +5,33 @@ namespace us.awise.biscuits;
 public unsafe sealed class PublicKey : IEquatable<PublicKey>, IDisposable
 {
     public const int SERIALIZED_SIZE = 32;
+    private const int EXPECTED_PEM_SIZE = 256;
 
     private static int s_serialCounter;
+
+    public static PublicKey FromPem(ReadOnlySpan<char> pem)
+    {
+        using (var builder = new CStringBuilder(pem, stackalloc byte[EXPECTED_PEM_SIZE]))
+            fixed (sbyte* buf = builder.Buffer)
+            {
+                generated.PublicKey* ret = public_key_from_pem(buf);
+                if (ret == null)
+                    throw BiscuitException.FromLastError();
+                return new PublicKey(ret);
+            }
+    }
+
+    public static PublicKey FromPem(ReadOnlySpan<byte> utf8Pem)
+    {
+        using (var builder = new CStringBuilder(utf8Pem, stackalloc byte[EXPECTED_PEM_SIZE]))
+            fixed (sbyte* buf = builder.Buffer)
+            {
+                generated.PublicKey* ret = public_key_from_pem(buf);
+                if (ret == null)
+                    throw BiscuitException.FromLastError();
+                return new PublicKey(ret);
+            }
+    }
 
     internal generated.PublicKey* _handle;
     private readonly int _serial;
@@ -59,6 +84,29 @@ public unsafe sealed class PublicKey : IEquatable<PublicKey>, IDisposable
             if (ret != SERIALIZED_SIZE)
             {
                 Environment.FailFast("public_key_serialize wrote an unexpected number of bytes");
+            }
+        }
+    }
+
+    public string ToPem()
+    {
+        lock (this)
+        {
+            if (_handle == null)
+                throw new ObjectDisposedException(nameof(PublicKey));
+
+            sbyte* ret = null;
+            try
+            {
+                ret = public_key_to_pem(_handle);
+                if (ret == null)
+                    throw BiscuitException.FromLastError();
+                return CString.ToString(ret);
+            }
+            finally
+            {
+                if (ret != null)
+                    string_free(ret);
             }
         }
     }

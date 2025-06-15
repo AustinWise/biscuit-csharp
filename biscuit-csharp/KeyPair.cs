@@ -10,6 +10,31 @@ public sealed unsafe class KeyPair : IDisposable
     public const int SERIALIZED_SIZE = 32;
 
     private const int SEED_SIZE = 32;
+    private const int EXPECTED_PEM_SIZE = 256;
+
+    public static KeyPair FromPem(ReadOnlySpan<char> pem)
+    {
+        using (var builder = new CStringBuilder(pem, stackalloc byte[EXPECTED_PEM_SIZE]))
+            fixed (sbyte* buf = builder.Buffer)
+            {
+                generated.KeyPair* ret = key_pair_from_pem(buf);
+                if (ret == null)
+                    throw BiscuitException.FromLastError();
+                return new KeyPair(ret);
+            }
+    }
+
+    public static KeyPair FromPem(ReadOnlySpan<byte> utf8Pem)
+    {
+        using (var builder = new CStringBuilder(utf8Pem, stackalloc byte[EXPECTED_PEM_SIZE]))
+            fixed (sbyte* buf = builder.Buffer)
+            {
+                generated.KeyPair* ret = key_pair_from_pem(buf);
+                if (ret == null)
+                    throw BiscuitException.FromLastError();
+                return new KeyPair(ret);
+            }
+    }
 
     internal generated.KeyPair* _handle;
 
@@ -102,6 +127,29 @@ public sealed unsafe class KeyPair : IDisposable
             if (ret != SERIALIZED_SIZE)
             {
                 Environment.FailFast("key_pair_serialize wrote an unexpected number of bytes");
+            }
+        }
+    }
+
+    public string ToPem()
+    {
+        lock (this)
+        {
+            if (_handle == null)
+                throw new ObjectDisposedException(nameof(PublicKey));
+
+            sbyte* ret = null;
+            try
+            {
+                ret = key_pair_to_pem(_handle);
+                if (ret == null)
+                    throw BiscuitException.FromLastError();
+                return CString.ToString(ret);
+            }
+            finally
+            {
+                if (ret != null)
+                    string_free(ret);
             }
         }
     }
