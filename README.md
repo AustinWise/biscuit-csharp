@@ -22,7 +22,6 @@ versions of Biscuit already wrap the Rust library.
 
 ## TODO
 
-* Expose error codes.
 * Expose structured information about authorization failure using the `error_check_*` functions.
 * Consider making the library tolerant of thread aborts. Currently this library only tries to not
   leak Rust-allocated memory in the event of a .NET out of memory error.
