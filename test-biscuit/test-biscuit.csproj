@@ -22,7 +22,7 @@
         </ItemGroup>
         <ItemGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
             <!-- This is needed by biscuit_auth.lib. -->
-            <LinkerArg Include="Userenv.lib" />
+            <NativeLibrary Include="Userenv.lib" />
         </ItemGroup>
 
         <!-- This is for dynamic linking when running on CoreCLR. -->
