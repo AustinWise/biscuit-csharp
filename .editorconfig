@@ -1,0 +1,18 @@
+root = true
+
+[*]
+indent_style = space
+
+[*.cs]
+
+indent_size = 4
+tab_width = 4
+insert_final_newline = true
+
+# CA1513: Use ObjectDisposedException throw helper.
+# Our target frameworks don't support this API.
+dotnet_diagnostic.CA1513.severity = none
+
+# SYSLIB1053: The specified LibraryImportAttribute arguments cannot be forwarded to DllImportAttribute.
+# The code generator only supports generating DllImport. They are blitable anyways, so it should not result in a marshaling stub.
+dotnet_diagnostic.SYSLIB1053.severity = none

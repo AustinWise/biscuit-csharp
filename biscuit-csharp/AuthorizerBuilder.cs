@@ -2,9 +2,9 @@
 
 namespace us.awise.biscuits;
 
-public unsafe struct AuthorizerBuilder
+public unsafe readonly struct AuthorizerBuilder
 {
-    internal generated.AuthorizerBuilder* _handle;
+    private readonly generated.AuthorizerBuilder* _handle;
 
     internal AuthorizerBuilder(generated.AuthorizerBuilder* handle)
     {
@@ -13,7 +13,7 @@ public unsafe struct AuthorizerBuilder
         _handle = handle;
     }
 
-    public void AddCheck(ReadOnlySpan<byte> utf8)
+    public readonly void AddCheck(ReadOnlySpan<byte> utf8)
     {
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
@@ -26,7 +26,7 @@ public unsafe struct AuthorizerBuilder
         }
     }
 
-    public void AddCheck(ReadOnlySpan<char> str)
+    public readonly void AddCheck(ReadOnlySpan<char> str)
     {
         using var chars = new CStringBuilder(str, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
@@ -39,7 +39,7 @@ public unsafe struct AuthorizerBuilder
         }
     }
 
-    public void AddFact(ReadOnlySpan<byte> utf8)
+    public readonly void AddFact(ReadOnlySpan<byte> utf8)
     {
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
@@ -52,7 +52,7 @@ public unsafe struct AuthorizerBuilder
         }
     }
 
-    public void AddFact(ReadOnlySpan<char> str)
+    public readonly void AddFact(ReadOnlySpan<char> str)
     {
         using var chars = new CStringBuilder(str, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
@@ -65,7 +65,7 @@ public unsafe struct AuthorizerBuilder
         }
     }
 
-    public void AddPolicy(ReadOnlySpan<byte> utf8)
+    public readonly void AddPolicy(ReadOnlySpan<byte> utf8)
     {
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
@@ -78,7 +78,7 @@ public unsafe struct AuthorizerBuilder
         }
     }
 
-    public void AddPolicy(ReadOnlySpan<char> str)
+    public readonly void AddPolicy(ReadOnlySpan<char> str)
     {
         using var chars = new CStringBuilder(str, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
@@ -91,7 +91,7 @@ public unsafe struct AuthorizerBuilder
         }
     }
 
-    public void AddRule(ReadOnlySpan<byte> utf8)
+    public readonly void AddRule(ReadOnlySpan<byte> utf8)
     {
         using var chars = new CStringBuilder(utf8, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
@@ -104,7 +104,7 @@ public unsafe struct AuthorizerBuilder
         }
     }
 
-    public void AddRule(ReadOnlySpan<char> str)
+    public readonly void AddRule(ReadOnlySpan<char> str)
     {
         using var chars = new CStringBuilder(str, stackalloc byte[CStringBuilder.STACK_SIZE]);
         fixed (sbyte* charPtr = chars.Buffer)
