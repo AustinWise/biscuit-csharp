@@ -1,4 +1,5 @@
-﻿using static us.awise.biscuits.generated.Methods;
+﻿using System.Diagnostics.CodeAnalysis;
+using static us.awise.biscuits.generated.Methods;
 
 namespace us.awise.biscuits;
 
@@ -50,19 +51,78 @@ public sealed unsafe class Authorizer : IDisposable
 
     public void Authorize()
     {
-        byte ret;
+        bool throwLastError = false;
         lock (this)
         {
             if (_handle == null)
                 throw new ObjectDisposedException(nameof(Authorizer));
-            ret = authorizer_authorize(_handle);
+            throwLastError = 0 == authorizer_authorize(_handle);
             GC.KeepAlive(this);
         }
-        if (ret == 0)
+        if (throwLastError)
         {
-            // TODO: maybe there is a way to return an option type instead of throwing?
+            AuthorizationError? authorizationError = null;
+            AuthorizationErrorKind? kind = AuthorizationError.TryGetAuthorizationErrorKind();
+            if (kind.HasValue)
+            {
+                authorizationError = new AuthorizationError(kind.Value);
+            }
+            throw BiscuitException.FromLastError(authorizationError);
+        }
+    }
+
+    /// <returns>true if the authorization succeeded</returns>
+    /// <exception cref="BiscuitException">When an error other than authorization occurs.</exception>
+    public bool TryAuthorize()
+    {
+        bool ret;
+        lock (this)
+        {
+            if (_handle == null)
+                throw new ObjectDisposedException(nameof(Authorizer));
+            ret = 0 != authorizer_authorize(_handle);
+            GC.KeepAlive(this);
+        }
+
+        if (!ret && !AuthorizationError.TryGetAuthorizationErrorKind().HasValue)
+        {
             throw BiscuitException.FromLastError();
         }
+
+        return ret;
+    }
+
+    /// <param name="authError">if authorization fails, this contains why</param>
+    /// <returns>true if the authorization succeeded</returns>
+    /// <exception cref="BiscuitException">When an error other than authorization occurs.</exception>
+    public bool TryAuthorize([NotNullWhen(false)] out AuthorizationError? authError)
+    {
+        authError = default;
+
+        bool ret;
+        lock (this)
+        {
+            if (_handle == null)
+                throw new ObjectDisposedException(nameof(Authorizer));
+            ret = 0 != authorizer_authorize(_handle);
+
+            GC.KeepAlive(this);
+        }
+
+        if (!ret)
+        {
+            AuthorizationErrorKind? kind = AuthorizationError.TryGetAuthorizationErrorKind();
+            if (kind.HasValue)
+            {
+                authError = new AuthorizationError(kind.Value);
+            }
+            else
+            {
+                throw BiscuitException.FromLastError();
+            }
+        }
+
+        return ret;
     }
 
     ~Authorizer()

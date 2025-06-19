@@ -6,19 +6,18 @@ internal unsafe class CString
 {
     public static string ToString(sbyte* strPtr)
     {
-        sbyte* msgPtr = strPtr;
-        if (msgPtr == null)
+        if (strPtr == null)
         {
             throw new ArgumentNullException();
         }
 
         int count = 0;
-        while (msgPtr[count] != 0)
+        while (strPtr[count] != 0)
         {
             count++;
         }
 
-        string str = Encoding.UTF8.GetString((byte*)msgPtr, count);
+        string str = Encoding.UTF8.GetString((byte*)strPtr, count);
 
         return str;
     }

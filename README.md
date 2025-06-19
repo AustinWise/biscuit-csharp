@@ -22,7 +22,7 @@ versions of Biscuit already wrap the Rust library.
 
 ## TODO
 
-* Expose structured information about authorization failure using the `error_check_*` functions.
+* Consider adding ASP.NET integration.
 * Consider making the library tolerant of thread aborts. Currently this library only tries to not
   leak Rust-allocated memory in the event of a .NET out of memory error.
 * Consider switching to use SafeHandles to manage Rust-allocated memory. This probably would help

@@ -1,5 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-using us.awise.biscuits;
+﻿using us.awise.biscuits;
 
 Console.WriteLine("Hello, World!");
 
@@ -35,6 +34,15 @@ catch (BiscuitException ex)
     Console.WriteLine("Expected auth failure: " + ex.Message);
     Console.WriteLine("authorizer world:");
     Console.WriteLine(authorizer);
+    if (ex.AuthorizationError is not null)
+    {
+        Console.WriteLine("Auth error kind: " + ex.AuthorizationError.Kind);
+        Console.WriteLine("Failed checks:");
+        foreach (var error in ex.AuthorizationError.Checks)
+        {
+            Console.WriteLine($"\t{error}");
+        }
+    }
 }
 
 Console.WriteLine("DONE!");
